@@ -1,0 +1,724 @@
+# c# - Explanation for ObjectCreationHandling using Newtonsoft JSON? - Stack Overflow
+c# - Explanation for ObjectCreationHandling using Newtonsoft JSON? - Stack Overflow                            
+
+[](#)
+
+[Stack Overflow](https://stackoverflow.com)
+
+1.  [About](https://stackoverflow.co/)
+2.  [Products](#)
+3.  [For Teams](/teams)
+
+1.  [Stack Overflow Public questions & answers](/questions)
+2.  [Stack Overflow for Teams Where developers & technologists share private knowledge with coworkers](/teams)
+3.  [Talent Build your employer brand](https://stackoverflow.co/talent)
+4.  [Advertising Reach developers & technologists worldwide](https://stackoverflow.co/advertising)
+5.  [About the company](https://stackoverflow.co/)
+
+ 
+
+Loading…
+
+1.  ### [current community](https://stackoverflow.com)
+    
+    *   [
+        
+        Stack Overflow](https://stackoverflow.com)
+        
+        [help](https://stackoverflow.com/help) [chat](https://chat.stackoverflow.com/?tab=site&host=stackoverflow.com)
+        
+    *   [
+        
+        Meta Stack Overflow](https://meta.stackoverflow.com)
+    
+    ### your communities
+    
+    [Sign up](https://stackoverflow.com/users/signup?ssrc=site_switcher&returnurl=https%3a%2f%2fstackoverflow.com%2fquestions%2f27848547%2fexplanation-for-objectcreationhandling-using-newtonsoft-json) or [log in](https://stackoverflow.com/users/login?ssrc=site_switcher&returnurl=https%3a%2f%2fstackoverflow.com%2fquestions%2f27848547%2fexplanation-for-objectcreationhandling-using-newtonsoft-json) to customize your list.
+    
+    ### [more stack exchange communities](https://stackexchange.com/sites)
+    
+    [company blog](https://stackoverflow.blog)
+    
+
+3.  [Log in](https://stackoverflow.com/users/login?ssrc=head&returnurl=https%3a%2f%2fstackoverflow.com%2fquestions%2f27848547%2fexplanation-for-objectcreationhandling-using-newtonsoft-json)
+4.  [Sign up](https://stackoverflow.com/users/signup?ssrc=head&returnurl=https%3a%2f%2fstackoverflow.com%2fquestions%2f27848547%2fexplanation-for-objectcreationhandling-using-newtonsoft-json)
+
+**Join Stack Overflow** to find the best answer to your technical question, help others answer theirs.
+
+[Sign up with email Sign up](/users/signup?ssrc=hero&returnurl=https%3a%2f%2fstackoverflow.com%2fquestions%2f27848547%2fexplanation-for-objectcreationhandling-using-newtonsoft-json) Sign up with Google Sign up with GitHub Sign up with Facebook
+
+   
+
+1.  [
+    
+    Home
+    
+    
+    
+    ](/)
+2.  1.  Public
+    2.  [Questions](/questions)
+    3.  [
+        
+        Tags
+        
+        
+        
+        ](/tags)
+    4.  [
+        
+        Users
+        
+        
+        
+        ](/users)
+    5.  [
+        
+        Companies
+        
+        
+        
+        ](https://stackoverflow.com/jobs/companies?so_medium=stackoverflow&so_source=SiteNav)
+    6.  Collectives
+        
+    7.  [Explore Collectives](/collectives)
+3.  1.  Teams
+        
+        **Stack Overflow for Teams** – Start collaborating and sharing organizational knowledge. ![](https://cdn.sstatic.net/Img/teams/teams-illo-free-sidebar-promo.svg?v=47faa659a05e)
+         [Create a free Team](https://try.stackoverflow.co/why-teams/?utm_source=so-owned&utm_medium=side-bar&utm_campaign=campaign-38&utm_content=cta) [Why Teams?](https://stackoverflow.co/teams)
+        
+    2.  Teams
+        
+    3.  [
+        
+        Create free Team
+        
+        
+        
+        ](https://stackoverflowteams.com/teams/create/free?utm_source=so-owned&utm_medium=side-bar&utm_campaign=campaign-38&utm_content=cta "Stack Overflow for Teams is a private, secure spot for your organization's questions and answers.")
+
+Stack Overflow for Teams is moving to its own domain! When the migration is complete, you will access your Teams at stackoverflowteams.com, and they will no longer appear in the left sidebar on stackoverflow.com.
+
+Check your email for updates.
+
+##### Collectives™ on Stack Overflow
+
+Find centralized, trusted content and collaborate around the technologies you use most.
+
+[Learn more about Collectives](/collectives)
+
+**Teams**
+
+Q&A for work
+
+Connect and share knowledge within a single location that is structured and easy to search.
+
+[Learn more about Teams](https://stackoverflow.co/teams)
+
+[Explanation for ObjectCreationHandling using Newtonsoft JSON?](/questions/27848547/explanation-for-objectcreationhandling-using-newtonsoft-json)
+=================================================================================================================================================
+
+[Ask Question](/questions/ask)
+
+Asked 7 years, 10 months ago
+
+Modified [6 years, 1 month ago](?lastactivity "2016-10-10 15:16:27Z")
+
+Viewed 4k times
+
+This question shows research effort; it is useful and clear
+
+22
+
+This question does not show any research effort; it is unclear or not useful
+
+Save this question.
+
+[](/posts/27848547/timeline)
+
+Show activity on this post.
+
+I was tracking down a bug and I noticed that Newtonsoft JSON will append items to a `List<>` that's been initialized in the default constructor. I did a little more digging and discussed with some people on the C# chat and we noticed that this behavior doesn't apply to all other collection types.
+
+[https://dotnetfiddle.net/ikNyiT](https://dotnetfiddle.net/ikNyiT)
+
+```null
+using System;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+public class TestClass
+{
+    public Collection<string> Collection = new Collection<string>(new [] { "ABC", "DEF" });
+    public List<string> List = new List<string>(new [] { "ABC", "DEF" });
+    public ReadOnlyCollection<string> ReadOnlyCollection = new ReadOnlyCollection<string>(new [] { "ABC", "DEF" });
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        var serialized = @"{
+            Collection: [ 'Goodbye', 'AOL' ],
+            List: [ 'Goodbye', 'AOL' ],
+            ReadOnlyCollection: [ 'Goodbye', 'AOL' ]
+        }";
+
+
+        var testObj = JsonConvert.DeserializeObject<TestClass>(serialized);
+
+        Console.WriteLine("testObj.Collection: " + string.Join(",", testObj.Collection));
+        Console.WriteLine("testObj.List: " + string.Join(",", testObj.List));
+        Console.WriteLine("testObj.ReadOnlyCollection: " + string.Join(",", testObj.ReadOnlyCollection));
+    }
+}
+
+```
+
+Output:
+
+```null
+testObj.Collection: ABC,DEF
+testObj.List: ABC,DEF,Goodbye,AOL
+testObj.ReadOnlyCollection: Goodbye,AOL
+
+```
+
+As you can see the `Collection<>` property is unaffected by deserialization, the `List<>` is appended to and `ReadOnlyCollection<>` is replaced. Is this intended behavior? What was the reasoning?
+
+*   [c#](/questions/tagged/c%23 "show questions tagged 'c#'")
+*   [json.net](/questions/tagged/json.net "show questions tagged 'json.net'")
+
+[Share](/q/27848547 "Short permalink to this question")
+
+Share a link to this question
+
+Copy link[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/ "The current license for this post: CC BY-SA 3.0")
+
+[Improve this question](/posts/27848547/edit)
+
+Follow
+
+Follow this question to receive notifications
+
+[edited Jan 8, 2015 at 21:17](/posts/27848547/revisions "show all edits to this post")
+
+[
+
+![](https://i.stack.imgur.com/pv5mS.png?s=64&g=1)
+
+
+](/users/1026459/travis-j)
+
+[Travis J](/users/1026459/travis-j)
+
+80k4040 gold badges203203 silver badges268268 bronze badges
+
+asked Jan 8, 2015 at 20:00
+
+[
+
+![](https://www.gravatar.com/avatar/e93a372e263490e0cf273ede0a1393ed?s=64&d=identicon&r=PG)
+
+
+](/users/52551/spencer-ruport)
+
+[Spencer Ruport](/users/52551/spencer-ruport)Spencer Ruport
+
+34.7k1111 gold badges8484 silver badges146146 bronze badges
+
+3
+
+*   I suspect the answer would be "just because", also it would be interesting to know if there is a reason behind behavior for List/Collection (ReadOnlyCollection's behavior is somewhat self-explanatory from my point of view). Side note: consider updating title to be more specific - "curious" is somewhat hard to guess if one would want to find this based on problem...
+    
+    – [Alexei Levenkov](/users/477420/alexei-levenkov "97,696 reputation")
+    
+    [Jan 8, 2015 at 21:15](#comment44103226_27848547)
+    
+*   @AlexeiLevenkov - I am having some issues figuring out the nuance between ReadOnlyCollection and Collection. The issue appears to be with the ObjectCreationHandling setting and so I added that to the title.
+    
+    – [Travis J](/users/1026459/travis-j "79,987 reputation")
+    
+    [Jan 8, 2015 at 21:18](#comment44103334_27848547)
+    
+*   This issue was also discussed in the [c# chat room](http://chat.stackoverflow.com/transcript/message/20857312#20857312).
+    
+    – [Travis J](/users/1026459/travis-j "79,987 reputation")
+    
+    [Jan 8, 2015 at 21:19](#comment44103357_27848547)
+    
+
+[Add a comment](# "Use comments to ask for more information or suggest improvements. Avoid answering questions in comments.")  | [](# "Expand to show all comments on this post")
+
+2 Answers 2
+-----------
+
+Sorted by: [Reset to default](/questions/27848547/explanation-for-objectcreationhandling-using-newtonsoft-json?answertab=scoredesc#tab-top)
+
+Highest score (default) Trending (recent votes count more) Date modified (newest first) Date created (oldest first)
+
+This answer is useful
+
+13
+
+This answer is not useful
+
+Save this answer.
+
++100
+
+This answer has been awarded bounties worth 100 reputation by Spencer Ruport
+
+[](/posts/27850476/timeline)
+
+Show activity on this post.
+
+It basically boils down to type instantiation and the [`ObjectCreationHandling`](http://james.newtonking.com/json/help/index.html?topic=html/T_Newtonsoft_Json_ObjectCreationHandling.htm) setting. There are three settings for `ObjectCreationHandling`
+
+> Auto 0 Reuse existing objects, create new objects when needed.  
+> Reuse 1 Only reuse existing objects.  
+> Replace 2 Always create new objects.
+
+The default is `auto` ([Line 44](https://github.com/JamesNK/Newtonsoft.Json/blob/ee170dc5510bb3ffd35fc1b0d986f34e33c51ab9/Src/Newtonsoft.Json/JsonSerializerSettings.cs)).
+
+Auto is only overwritten after a series of checks which determine if the current type has a `TypeInitializer` which is null. At that point it checks if there is a parameterless constructor.
+
+> ///  
+> /// Create a factory function that can be used to create instances of a JsonConverter described by the  
+> /// argument type.  
+> /// The returned function can then be used to either invoke the converter's default ctor, or any  
+> /// parameterized constructors by way of an object array.  
+> ///
+
+Essentially it acts like this (what it looks like is about 1500 lines of code in 6 classes).
+
+```null
+ObjectCreationHandling och = ObjectCreationHandling.Auto;
+if( typeInitializer == null )
+{
+ if( parameterlessConstructor )
+ {
+  och = ObjectCreationHandling.Reuse;
+ }
+ else
+ {
+  och = ObjectCreationHandling.Replace;
+ }
+}
+
+```
+
+This setting is a part of the JsonSerializerSettings which are composed inside of the visitor pattern constructor for DeserializeObject. As shown above, each setting has a different function.
+
+Getting back to List, Collection, and ReadOnlyCollection, we will look at the set of conditional statements for each.
+
+_List_
+
+`testObj.List.GetType().TypeInitializer == null` is false. As a result, `List` receives the default ObjectCreationHandling.Auto and the instantiated List for the testObj instance is used during deserialization, as well as a new List being instantiated with the `serialized` string.
+
+```null
+testObj.List: ABC,DEF,Goodbye,AOL
+
+```
+
+_Collection_
+
+`testObj.Collection.GetType().TypeInitializer == null` is true indicating there was no reflected type initializer available, so we go to the next condition which is to check if there is a parameterless constructor. `testObj.Collection.GetType().GetConstructor(Type.EmptyTypes) == null` is false. As a result `Collection` receives the value of ObjectCreationHandling.Reuse (_only reuse existing objects_). The instantiated instance for Collection is used from testObj, but the `serialized` string is not able to be instantiated.
+
+```null
+testObj.Collection: ABC,DEF
+
+```
+
+_ReadOnlyCollection_
+
+`testObj.ReadOnlyCollection.GetType().TypeInitializer == null` is true indicating there was no reflected type initializer available, so we go to the next condition which is to check if there is a parameterless constructor. `testObj.ReadOnlyCollection.GetType().GetConstructor(Type.EmptyTypes) == null` is also true. As a result ReadOnlyCollection recieves the value of ObjectCreationHandling.Replace (_always create new objects_). Only the instantiated value from the `serialized` string is used.
+
+```null
+testObj.ReadOnlyCollection: Goodbye,AOL
+
+```
+
+[Share](/a/27850476 "Short permalink to this answer")
+
+Share a link to this answer
+
+Copy link[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/ "The current license for this post: CC BY-SA 3.0")
+
+[Improve this answer](/posts/27850476/edit)
+
+Follow
+
+Follow this answer to receive notifications
+
+[edited Jan 8, 2015 at 22:21](/posts/27850476/revisions "show all edits to this post")
+
+answered Jan 8, 2015 at 22:13
+
+[
+
+![](https://i.stack.imgur.com/pv5mS.png?s=64&g=1)
+
+
+](/users/1026459/travis-j)
+
+[Travis J](/users/1026459/travis-j)Travis J
+
+80k4040 gold badges203203 silver badges268268 bronze badges
+
+[Add a comment](# "Use comments to ask for more information or suggest improvements. Avoid comments like “+1” or “thanks”.")  | [](# "Expand to show all comments on this post")
+
+This answer is useful
+
+3
+
+This answer is not useful
+
+Save this answer.
+
+[](/posts/39961511/timeline)
+
+Show activity on this post.
+
+Although this has been resolved, I wanted to post this answer to a duplicate question originally, but that question was closed, so I am publishing my answer here, as it contains some internal look into this.
+
+Because Json.NET is open source, we can luckily track down the reason down to its root :-) .
+
+If you check the Json.NET source, you can find class `JsonSerializerInternalReader` which handles the deserialization ([complete source here](https://github.com/JamesNK/Newtonsoft.Json/blob/17f87f53211af9645ab8b6947d79e9f4e0e3c6be/Src/Newtonsoft.Json/Serialization/JsonSerializerInternalReader.cs)). This class has a method `SetPropertyValue`, which sets the deserialized value on the newly created object (code abbreviated):
+
+```null
+private bool SetPropertyValue(JsonProperty property, ..., object target)
+{
+    ...
+    if (CalculatePropertyDetails(
+          property, 
+          ...,
+          out useExistingValue,
+          ... ))
+    {
+        return false;
+    }
+
+    ...
+
+    if (propertyConverter != null && propertyConverter.CanRead)
+    {
+        ...
+    }
+    else
+    {
+        value = CreateValueInternal(
+           ...,
+           (useExistingValue) ? currentValue : null);
+    }
+
+    if ((!useExistingValue || value != currentValue)
+        && ShouldSetPropertyValue(property, value))
+    {
+        property.ValueProvider.SetValue(target, value);
+        ...    
+        return true;
+    }
+    return useExistingValue;
+}
+
+```
+
+As you can see, there is a boolean flag `useExistingValue` which determines whether or not the existing value is reused or replaced.
+
+Inside the `CalculatePropertyDetails` method is the following snippet:
+
+```null
+        if ((objectCreationHandling != ObjectCreationHandling.Replace)
+            && (tokenType == JsonToken.StartArray || tokenType == JsonToken.StartObject)
+            && property.Readable)
+        {
+            currentValue = property.ValueProvider.GetValue(target);
+            gottenCurrentValue = true;
+
+            if (currentValue != null)
+            {
+                ...
+
+                useExistingValue = (
+                   !propertyContract.IsReadOnlyOrFixedSize &&
+                   !propertyContract.UnderlyingType.IsValueType());
+            }
+        }
+
+```
+
+In case of the `List<T>` underlying collection, the `IsReadOnlyOrFixedSize` returns `false` and `IsValueType()` returns `false` - hence the underlying existing value is reused.
+
+For `Array`, `IsValueType()` is also `false`, but the `IsReadOnlyOrFixedSize` is `true` for obvious reasons, therefore the `useExistingValue` flag is set to `false` and the `CreateValueInternal` call in the `SetPropertyValue` method receives a `null` reference which is an indicator not to reuse the existing value, but to create a new one, which is then set on the new instance.
+
+As was mentioned, this behavior can be altered using `ObjectCreationHandling.Replace`, as this is checked before setting the `useExistingValue` in the `CalculatePropertyDetails` method.
+
+[Share](/a/39961511 "Short permalink to this answer")
+
+Share a link to this answer
+
+Copy link[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/ "The current license for this post: CC BY-SA 3.0")
+
+[Improve this answer](/posts/39961511/edit)
+
+Follow
+
+Follow this answer to receive notifications
+
+answered Oct 10, 2016 at 15:16
+
+[
+
+![](https://i.stack.imgur.com/C5p6I.jpg?s=64&g=1)
+
+
+](/users/732221/martin-zikmund)
+
+[Martin Zikmund](/users/732221/martin-zikmund)Martin Zikmund
+
+37.7k77 gold badges7171 silver badges9191 bronze badges
+
+[Add a comment](# "Use comments to ask for more information or suggest improvements. Avoid comments like “+1” or “thanks”.")  | [](# "Expand to show all comments on this post")
+
+  
+
+Your Answer
+-----------
+
+Thanks for contributing an answer to Stack Overflow!
+
+*   Please be sure to _answer the question_. Provide details and share your research!
+
+But _avoid_ …
+
+*   Asking for help, clarification, or responding to other answers.
+*   Making statements based on opinion; back them up with references or personal experience.
+
+To learn more, see our [tips on writing great answers](/help/how-to-answer).
+
+Draft saved
+
+Draft discarded
+
+ 
+
+### Sign up or [log in](/users/login?ssrc=question_page&returnurl=https%3a%2f%2fstackoverflow.com%2fquestions%2f27848547%2fexplanation-for-objectcreationhandling-using-newtonsoft-json%23new-answer)
+
+Sign up using Google
+
+Sign up using Facebook
+
+Sign up using Email and Password
+
+  Submit
+
+### Post as a guest
+
+Name
+
+Email
+
+Required, but never shown
+
+Post Your Answer Discard
+
+By clicking “Post Your Answer”, you agree to our [terms of service](https://stackoverflow.com/legal/terms-of-service/public), [privacy policy](https://stackoverflow.com/legal/privacy-policy) and [cookie policy](https://stackoverflow.com/legal/cookie-policy)
+
+Not the answer you're looking for? Browse other questions tagged
+
+*   [c#](/questions/tagged/c%23 "show questions tagged 'c#'")
+*   [json.net](/questions/tagged/json.net "show questions tagged 'json.net'")
+
+or [ask your own question](/questions/ask).
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+*   Upcoming Events
+*   [2022 Community Moderator Election](https://stackoverflow.com/election?cb=1)
+    
+    ends in 6 days
+    
+*   The Overflow Blog
+*   [Speeding software innovation with low-code/no-code tools](https://stackoverflow.blog/2022/11/15/speeding-software-innovation-with-low-code-no-code-tools/?cb=1)
+    
+    sponsored post
+    
+*   [Tips and tricks for succeeding as a developer emigrating to Japan (Ep. 505)](https://stackoverflow.blog/2022/11/15/tips-and-tricks-for-succeeding-as-a-developer-emigrating-to-japan-ep-505/?cb=1)
+    
+*   Featured on Meta
+*   [Should we burninate the \[collapse\] tag?](https://meta.stackoverflow.com/questions/254311/should-we-burninate-the-collapse-tag?cb=1)
+    
+*   [The Ask Wizard (2022) has graduated](https://meta.stackoverflow.com/questions/421038/the-ask-wizard-2022-has-graduated?cb=1)
+    
+*   [Staging Ground Workflow: Canned Comments](https://meta.stackoverflow.com/questions/420897/staging-ground-workflow-canned-comments?cb=1)
+    
+
+#### Linked
+
+[
+
+4
+
+](https://stackoverflow.com/q/39960733?lq=1 "Question score (upvotes - downvotes)")[Newtonsoft.JSON: JSON List and Array are handled differently](https://stackoverflow.com/questions/39960733/newtonsoft-json-json-list-and-array-are-handled-differently?noredirect=1&lq=1)
+
+[
+
+5
+
+](https://stackoverflow.com/q/29113063?lq=1 "Question score (upvotes - downvotes)")[JSON.NET Why does it Add to List instead of Overwriting?](https://stackoverflow.com/questions/29113063/json-net-why-does-it-add-to-list-instead-of-overwriting?noredirect=1&lq=1)
+
+[
+
+0
+
+](https://stackoverflow.com/q/32595200?lq=1 "Question score (upvotes - downvotes)")[Unexptected result when trying to deserialize json file in json.net](https://stackoverflow.com/questions/32595200/unexptected-result-when-trying-to-deserialize-json-file-in-json-net?noredirect=1&lq=1)
+
+#### Related
+
+[
+
+2343
+
+](https://stackoverflow.com/q/125319?rq=1 "Question score (upvotes - downvotes)")[Should 'using' directives be inside or outside the namespace?](https://stackoverflow.com/questions/125319/should-using-directives-be-inside-or-outside-the-namespace?rq=1)
+
+[
+
+2829
+
+](https://stackoverflow.com/q/247621?rq=1 "Question score (upvotes - downvotes)")[What are the correct version numbers for C#?](https://stackoverflow.com/questions/247621/what-are-the-correct-version-numbers-for-c?rq=1)
+
+[
+
+1439
+
+](https://stackoverflow.com/q/372865?rq=1 "Question score (upvotes - downvotes)")[Path.Combine for URLs?](https://stackoverflow.com/questions/372865/path-combine-for-urls?rq=1)
+
+[
+
+815
+
+](https://stackoverflow.com/q/1207731?rq=1 "Question score (upvotes - downvotes)")[How can I deserialize JSON to a simple Dictionary<string,string> in ASP.NET?](https://stackoverflow.com/questions/1207731/how-can-i-deserialize-json-to-a-simple-dictionarystring-string-in-asp-net?rq=1)
+
+[
+
+1363
+
+](https://stackoverflow.com/q/2441290?rq=1 "Question score (upvotes - downvotes)")[JavaScriptSerializer - JSON serialization of enum as string](https://stackoverflow.com/questions/2441290/javascriptserializer-json-serialization-of-enum-as-string?rq=1)
+
+[
+
+1147
+
+](https://stackoverflow.com/q/3142495?rq=1 "Question score (upvotes - downvotes)")[Deserialize JSON into C# dynamic object?](https://stackoverflow.com/questions/3142495/deserialize-json-into-c-sharp-dynamic-object?rq=1)
+
+[
+
+489
+
+](https://stackoverflow.com/q/4535840?rq=1 "Question score (upvotes - downvotes)")[Deserialize JSON object into dynamic object using Json.net](https://stackoverflow.com/questions/4535840/deserialize-json-object-into-dynamic-object-using-json-net?rq=1)
+
+[
+
+336
+
+](https://stackoverflow.com/q/4749639?rq=1 "Question score (upvotes - downvotes)")[Deserializing JSON to .NET object using Newtonsoft (or LINQ to JSON maybe?)](https://stackoverflow.com/questions/4749639/deserializing-json-to-net-object-using-newtonsoft-or-linq-to-json-maybe?rq=1)
+
+[
+
+665
+
+](https://stackoverflow.com/q/6507889?rq=1 "Question score (upvotes - downvotes)")[How to ignore a property in class if null, using json.net](https://stackoverflow.com/questions/6507889/how-to-ignore-a-property-in-class-if-null-using-json-net?rq=1)
+
+[
+
+351
+
+](https://stackoverflow.com/q/15915503?rq=1 "Question score (upvotes - downvotes)")[.NET NewtonSoft JSON deserialize map to a different property name](https://stackoverflow.com/questions/15915503/net-newtonsoft-json-deserialize-map-to-a-different-property-name?rq=1)
+
+#### [Hot Network Questions](https://stackexchange.com/questions?tab=hot)
+
+*   [Is it legal for Blizzard to completely shut down Overwatch 1 in order to replace it with Overwatch 2?](https://law.stackexchange.com/questions/86258/is-it-legal-for-blizzard-to-completely-shut-down-overwatch-1-in-order-to-replace)
+*   [How difficult would it be to reverse engineer a device whose function is based on unknown physics?](https://worldbuilding.stackexchange.com/questions/238183/how-difficult-would-it-be-to-reverse-engineer-a-device-whose-function-is-based-o)
+*   [Wall was built a 1/2" short](https://diy.stackexchange.com/questions/260575/wall-was-built-a-1-2-short)
+*   [How can a retail investor check whether a cryptocurrency exchange is safe to use?](https://money.stackexchange.com/questions/153624/how-can-a-retail-investor-check-whether-a-cryptocurrency-exchange-is-safe-to-use)
+*   [Origin and pronunciation of "verbugt"](https://german.stackexchange.com/questions/72184/origin-and-pronunciation-of-verbugt)
+*   [Showing to police only a copy of a document with a cross on it reading "not associable with any utility or profile of any entity"](https://law.stackexchange.com/questions/86255/showing-to-police-only-a-copy-of-a-document-with-a-cross-on-it-reading-not-asso)
+*   [How many concentration saving throws does a spellcaster moving through Spike Growth need to make?](https://rpg.stackexchange.com/questions/202769/how-many-concentration-saving-throws-does-a-spellcaster-moving-through-spike-gro)
+*   [Is there a verb in this sentence?](https://french.stackexchange.com/questions/51654/is-there-a-verb-in-this-sentence)
+*   [What city/town layout would best be suited for combating isolation/atomization?](https://worldbuilding.stackexchange.com/questions/238126/what-city-town-layout-would-best-be-suited-for-combating-isolation-atomization)
+*   [Plotting roots found using Reduce](https://mathematica.stackexchange.com/questions/276042/plotting-roots-found-using-reduce)
+*   [Why are these two proofs so different?](https://proofassistants.stackexchange.com/questions/1848/why-are-these-two-proofs-so-different)
+*   [Brown and clear water of a stream](https://ell.stackexchange.com/questions/327369/brown-and-clear-water-of-a-stream)
+*   [Does no correlation but dependence imply a symmetry in the joint variable space?](https://stats.stackexchange.com/questions/595716/does-no-correlation-but-dependence-imply-a-symmetry-in-the-joint-variable-space)
+*   [Struggling to motivate new employee](https://workplace.stackexchange.com/questions/188568/struggling-to-motivate-new-employee)
+*   [Under what conditions would a society be able to remain undetected in our current world?](https://worldbuilding.stackexchange.com/questions/238127/under-what-conditions-would-a-society-be-able-to-remain-undetected-in-our-curren)
+*   [Sci-fi youth novel with a young female protagonist who is watching over the development of another planet](https://scifi.stackexchange.com/questions/269480/sci-fi-youth-novel-with-a-young-female-protagonist-who-is-watching-over-the-deve)
+*   [How can I attach Harbor Freight blue puck lights to mountain bike for front lights?](https://bicycles.stackexchange.com/questions/86620/how-can-i-attach-harbor-freight-blue-puck-lights-to-mountain-bike-for-front-ligh)
+*   [Can a trans man get an abortion in Texas where a woman can't?](https://law.stackexchange.com/questions/86305/can-a-trans-man-get-an-abortion-in-texas-where-a-woman-cant)
+*   [Linearize objective function in MILP](https://or.stackexchange.com/questions/9313/linearize-objective-function-in-milp)
+*   [What clamp to use to transition from 1950s-era fabric-jacket NM?](https://diy.stackexchange.com/questions/260570/what-clamp-to-use-to-transition-from-1950s-era-fabric-jacket-nm)
+*   [Why do paratroopers not get sucked out of their aircraft when the bay door opens?](https://aviation.stackexchange.com/questions/95912/why-do-paratroopers-not-get-sucked-out-of-their-aircraft-when-the-bay-door-opens)
+*   [How to dare to whistle or to hum in public?](https://music.stackexchange.com/questions/125948/how-to-dare-to-whistle-or-to-hum-in-public)
+*   [What is the meaning of “to fight a Catch-22 is to accept it”?](https://philosophy.stackexchange.com/questions/94794/what-is-the-meaning-of-to-fight-a-catch-22-is-to-accept-it)
+*   [How can I fit equations with numbering into a table?](https://tex.stackexchange.com/questions/665262/how-can-i-fit-equations-with-numbering-into-a-table)
+
+[Question feed](/feeds/question/27848547 "Feed of this question and its answers")
+
+Subscribe to RSS
+================
+
+Question feed
+
+To subscribe to this RSS feed, copy and paste this URL into your RSS reader.
+
+ 
+
+[](#)
+
+lang-cs
+
+##### [Stack Overflow](https://stackoverflow.com)
+
+*   [Questions](/questions)
+*   [Help](/help)
+
+##### [Products](https://stackoverflow.co/)
+
+*   [Teams](https://stackoverflow.co/teams)
+*   [Advertising](https://stackoverflow.co/advertising)
+*   [Collectives](https://stackoverflow.co/collectives)
+*   [Talent](https://stackoverflow.co/talent)
+
+##### [Company](https://stackoverflow.co/)
+
+*   [About](https://stackoverflow.co/)
+*   [Press](https://stackoverflow.co/company/press)
+*   [Work Here](https://stackoverflow.co/company/work-here)
+*   [Legal](https://stackoverflow.com/legal)
+*   [Privacy Policy](https://stackoverflow.com/legal/privacy-policy)
+*   [Terms of Service](https://stackoverflow.com/legal/terms-of-service)
+*   [Contact Us](https://stackoverflow.co/company/contact)
+*   [Cookie Settings](#)
+*   [Cookie Policy](https://stackoverflow.com/legal/cookie-policy)
+
+##### [Stack Exchange Network](https://stackexchange.com)
+
+*   [Technology](https://stackexchange.com/sites#technology)
+*   [Culture & recreation](https://stackexchange.com/sites#culturerecreation)
+*   [Life & arts](https://stackexchange.com/sites#lifearts)
+*   [Science](https://stackexchange.com/sites#science)
+*   [Professional](https://stackexchange.com/sites#professional)
+*   [Business](https://stackexchange.com/sites#business)
+*   [API](https://api.stackexchange.com/)
+*   [Data](https://data.stackexchange.com/)
+
+*   [Blog](https://stackoverflow.blog?blb=1)
+*   [Facebook](https://www.facebook.com/officialstackoverflow/)
+*   [Twitter](https://twitter.com/stackoverflow)
+*   [LinkedIn](https://linkedin.com/company/stack-overflow)
+*   [Instagram](https://www.instagram.com/thestackoverflow)
+
+Site design / logo © 2022 Stack Exchange Inc; user contributions licensed under [CC BY-SA](https://stackoverflow.com/help/licensing). rev 2022.11.15.43034
