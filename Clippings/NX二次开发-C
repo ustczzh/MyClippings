@@ -1,0 +1,329 @@
+# NX二次开发-C#多线程技术做exe外部开发(批量导出PDF图纸例子) - 华夏编程网
+NX二次开发的内部开发模式不能做多线程，只能单线程。就好比要写一个程序创建100个块，一定要在入口函数的主线程上创建100个块，如果在开几个线程去同时创建块，那么NX就会报错挂掉。
+
+但是，NX二次开发的外部开发模式做好exe，在去写另一个多线程的程序，调用这个exe是可以的。
+
+我认为在NX里做创建特征等相关的操作，与部件导航器等需要记录特征和对象创建的，就必须要单线程。如果同时多线程创建100个块，那部件导航器的建模顺序都乱掉了，所以不能多线程。
+
+而做一个与上面无关的操作，还是可以的。比如：批量打印图纸，批量导出模型这些。封装成exe，应用多线程技术就可以提速很多了。
+
+下面的例子是先用一个线程导出20张pdf，在用四个线程导出20张pdf。我们来对比下速度。
+
+**1.封装exe(NXC#项目)**
+
+```
+
+
+`NX11+VS2013
+
+using System;
+using NXOpen;
+using NXOpen.UF;
+
+public class Program
+{
+    
+    private static Session theSession;
+    private static UFSession theUfSession;
+    public static Program theProgram;
+    public static bool isDisposeCalled;
+
+    
+    
+    
+    public Program()
+    {
+        try
+        {
+            theSession = Session.GetSession();
+            theUfSession = UFSession.GetUFSession();
+            isDisposeCalled = false;
+        }
+        catch (NXOpen.NXException ex)
+        {
+            
+            
+        }
+    }
+
+    
+    
+    
+    
+    public static int Main(string[] args)
+    {
+        int retValue = 0;
+        try
+        {
+            theProgram = new Program();
+
+            
+
+            Console.WriteLine("正在导出PDF");
+
+            
+            Tag PartTag = Tag.Null;
+            UFPart.LoadStatus ErrorStatus = new UFPart.LoadStatus();
+            theUfSession.Part.Open("D:\1.prt", out PartTag, out ErrorStatus);
+
+            
+            NXOpen.Part workPart = theSession.Parts.Work;
+            NXOpen.PrintPDFBuilder printPDFBuilder1;
+            printPDFBuilder1 = workPart.PlotManager.CreatePrintPdfbuilder();
+            printPDFBuilder1.Scale = 1.0;
+            printPDFBuilder1.Size = NXOpen.PrintPDFBuilder.SizeOption.ScaleFactor;
+            printPDFBuilder1.Units = NXOpen.PrintPDFBuilder.UnitsOption.English;
+            printPDFBuilder1.XDimension = 8.5;
+            printPDFBuilder1.YDimension = 11.0;
+            printPDFBuilder1.OutputText = NXOpen.PrintPDFBuilder.OutputTextOption.Polylines;
+            printPDFBuilder1.RasterImages = true;
+            NXOpen.NXObject[] sheets1 = new NXOpen.NXObject[1];
+            NXOpen.Drawings.DrawingSheet drawingSheet1 = (NXOpen.Drawings.DrawingSheet)workPart.DrawingSheets.FindObject("Sheet 1");
+            sheets1[0] = drawingSheet1;
+            printPDFBuilder1.SourceBuilder.SetSheets(sheets1);
+            printPDFBuilder1.Filename = "D:\2\" + args[0].ToString() + ".pdf";
+            NXOpen.NXObject nXObject1;
+            nXObject1 = printPDFBuilder1.Commit();
+            printPDFBuilder1.Destroy();
+
+            
+            theUfSession.Part.Close(theSession.Parts.Display.Tag,1,1);
+
+            theProgram.Dispose();
+        }
+        catch (NXOpen.NXException ex)
+        {
+            
+
+        }
+        return retValue;
+    }
+
+    
+    
+    
+    public void Dispose()
+    {
+        try
+        {
+            if (isDisposeCalled == false)
+            {
+                
+            }
+            isDisposeCalled = true;
+        }
+        catch (NXOpen.NXException ex)
+        {
+            
+
+        }
+    }
+
+}
+
+Caesar卢尚宇
+2020年10月6日`
+
+Code language: PHP (php)
+```
+
+**2.调用exe(C#控制台项目)**
+
+主线程
+
+```
+
+
+`using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace ConsoleApplication2
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("程序开始执行
+");
+
+            System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+            watch.Start();  //开始监视代码运行时间
+
+            MyCounter counter = new MyCounter();
+            MyCounterA counterA = new MyCounterA();
+            MyCounterB counterB = new MyCounterB();
+
+            Thread t = new Thread(new ThreadStart(counter.Run));
+            t.Start();
+
+            Thread tA = new Thread(new ThreadStart(counterA.Run));
+            tA.Start();
+
+            Thread tB = new Thread(new ThreadStart(counterB.Run));
+            tB.Start();
+
+            for (int i = 0; i < 5; i++)
+            {
+                //调用exe创建块
+                System.Diagnostics.Process exep1 = System.Diagnostics.Process.Start("D:\TestCode\NX11_Open_CS_Wizard4\NX11_Open_CS_Wizard4\bin\Debug\NX11_Open_CS_Wizard4.exe", i.ToString()+"A");
+                exep1.WaitForExit();//等待外部程序退出后才能往下执行
+            }
+
+            watch.Stop();  //停止监视
+            TimeSpan timespan = watch.Elapsed;  //获取当前实例测量得出的总时间
+            Console.WriteLine("程序结束" + ",代码执行时间：{0}(毫秒)", timespan.TotalMilliseconds);//总毫秒数
+        }
+    }
+}
+
+Caesar卢尚宇
+2020年10月6日`
+
+Code language: HTML, XML (xml)
+```
+
+线程1
+
+```
+
+
+`using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace ConsoleApplication2
+{
+    class MyCounter
+    {
+        public void Run()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                
+                System.Diagnostics.Process exep1 = System.Diagnostics.Process.Start("D:\TestCode\NX11_Open_CS_Wizard4\NX11_Open_CS_Wizard4\bin\Debug\NX11_Open_CS_Wizard4.exe", i.ToString() + "B");
+                exep1.WaitForExit();
+            }
+        }
+    }
+}
+
+Caesar卢尚宇尚宇
+2020年10月6日`
+
+Code language: JavaScript (javascript)
+```
+
+线程2
+
+```
+
+
+`using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApplication2
+{
+    class MyCounterA
+    {
+        public void Run()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                
+                System.Diagnostics.Process exep1 = System.Diagnostics.Process.Start("D:\TestCode\NX11_Open_CS_Wizard4\NX11_Open_CS_Wizard4\bin\Debug\NX11_Open_CS_Wizard4.exe", i.ToString() + "C");
+                exep1.WaitForExit();
+            }
+        }
+    }
+}
+
+Caesar卢尚宇尚宇
+2020年10月6日`
+
+Code language: JavaScript (javascript)
+```
+
+线程3
+
+```
+
+
+`using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApplication2
+{
+    class MyCounterB
+    {
+        public void Run()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                
+                System.Diagnostics.Process exep1 = System.Diagnostics.Process.Start("D:\TestCode\NX11_Open_CS_Wizard4\NX11_Open_CS_Wizard4\bin\Debug\NX11_Open_CS_Wizard4.exe", i.ToString() + "D");
+                exep1.WaitForExit();
+            }
+        }
+    }
+}
+
+Caesar卢尚宇尚宇
+2020年10月6日`
+
+Code language: JavaScript (javascript)
+```
+
+**3.速度对比动画**
+
+1.四个线程导出20张pdf
+
+2.一个线程导出20张pdf
+
+在速度上，肉眼就已经可以看出差距了。
+
+**4.补充**
+
+ 1.想要每次调用exe不弹出控制台窗口的话，可以使用下面这种方式调用。
+
+```
+
+
+ `for (int i = 0; i < 20; i++)
+            {
+                
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo("D:\TestCode\NX11_Open_CS_Wizard4\NX11_Open_CS_Wizard4\bin\Debug\NX11_Open_CS_Wizard4.exe", i.ToString()+"A");
+                
+                startInfo.CreateNoWindow = true;
+                
+                startInfo.UseShellExecute = false;
+                
+                startInfo.RedirectStandardOutput = true;
+                System.Diagnostics.Process process = System.Diagnostics.Process.Start(startInfo);;
+                process.WaitForExit();
+            }`
+
+Code language: JavaScript (javascript)
+```
+
+2.有些调用的exe是不需要阻塞等待的，就不需要用process.WaitForExit();这句了，速度上能更快些。
+
+如果有些需要等调用exe，等待exe执行完的内容的，就需要阻塞等待了。等exe结束了，在执行下面的操作。
+
+Caesar卢尚宇
+
+2020年10月6日
+
+原文地址：https://www.cnblogs.com/nxopen2018/p/13773801.html
