@@ -1,0 +1,101 @@
+# C\#通过字符串名称来调用对应字符串名称的方法 - 正误诺 - 博客园
+前段时间在一个项目中，在一个地方要将函数所在类中的方法都调用一遍，但是否调用要通过配置文件中的内容决定。所以为了减少代码量，在网上查了相关信息，终于成功的将其应用到了项目中，我在这里将我做的一个简单例子提供给大家，便于大家方便下载和理解。
+
+主要用到了反射的一个特性，主要代码如下：
+
+![](https://common.cnblogs.com/images/copycode.gif)
+
+object\[\] \_params = new object\[kvp.Value.Length\]; for (int i = 0; i <= \_params.Length - 1; i++)
+{
+\_params\[i\] \= kvp.Value\[i\]; 
+}
+
+Type t \= typeof(ListOfWay); 
+MethodInfo mi \= t.GetMethod(kvp.Key.ToString()); object objinstance = Activator.CreateInstance(t); int result = (int)mi.Invoke(objinstance, \_params);
+
+![](https://common.cnblogs.com/images/copycode.gif)
+
+基本步骤就是：
+
+1、将要调用的方法的参数全部依次放入一个object数组中；
+
+2、用反射一个特性，获得方法所在类的类型；
+
+3、根据对象和方法参数去调用这个方法。
+
+ 详细代码：
+
+![](https://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif)
+
+![](https://common.cnblogs.com/images/copycode.gif)
+
+using System; using System.Collections.Generic; using System.Linq; using System.Text; using System.Threading.Tasks; using System.Xml; using System.Reflection; using TestWay; namespace 加载xml及调用字符串名的函数
+{ class Program
+    { static void Main(string\[\] args)
+        {
+            Dictionary<string, string\[\]> dict = new Dictionary<string, string\[\]>(); string path = @"InputParam.xml";
+
+            ReadXml(path, dict); foreach (KeyValuePair<string, string\[\]> kvp in dict)
+            { #region 根据字符串去调用与字符串相同名称的方法
+                object\[\] \_params = new object\[kvp.Value.Length\];  //根据键值对中值的多少声明一个同样大小的字符串数组
+                for (int i = 0; i <= \_params.Length - 1; i++)
+                {
+                    \_params\[i\] \= kvp.Value\[i\];       //将键值对中的值写入数组中
+ }
+
+                Type t \= typeof(ListOfWay);           //获得方法所在的类的类型
+                MethodInfo mi = t.GetMethod(kvp.Key.ToString());       //根据字符串名称获得对应的方法
+                object objinstance = Activator.CreateInstance(t);      //创建一个方法所在的类的一个对象
+                int result = (int)mi.Invoke(objinstance, \_params);     //根据对象和方法参数去执行方法
+                #endregion Console.WriteLine(result);
+            }
+
+            Console.ReadLine();
+        } #region Way2
+        /// <summary>
+        /// 读取XML文档 /// </summary>
+        /// <param name="path">xml路径（含名称）</param>
+        /// <param name="dict">xml中参数字典</param>
+
+        public static void ReadXml(string path, Dictionary<string, string\[\]> dict)
+        {
+            XmlDocument xml \= new XmlDocument();
+            xml.Load(path);
+            XmlElement xmlRoot \= xml.DocumentElement;      //根节点
+            XmlNodeList xmllist = xmlRoot.ChildNodes;      //根节点下所有子节点（一般是二级节点）
+            foreach (XmlNode item in xmllist)
+            {
+                XmlNodeList inxmllist \= item.ChildNodes;   //每个子节点下的所有子节点（一般是三级节点，也基本是最内层节点）
+                string\[\] param = new string\[inxmllist.Count\]; for (int i = 0; i <= inxmllist.Count - 1; i++)
+                {
+                    param\[i\] \= inxmllist\[i\].InnerText;     //将每个子节点的值放入数组
+ }
+                dict.Add(item.Name, param);
+            }
+        } #endregion }
+}
+
+![](https://common.cnblogs.com/images/copycode.gif)
+
+用于测试的方法所在的类的代码：
+
+![](https://images.cnblogs.com/OutliningIndicators/ExpandedBlockStart.gif)
+
+![](https://common.cnblogs.com/images/copycode.gif)
+
+using System; using System.Collections.Generic; using System.Linq; using System.Text; using System.Threading.Tasks; namespace TestWay
+{ public class ListOfWay
+    { public int Add(string a, string b)
+        { return Convert.ToInt32(a) + Convert.ToInt32(b);
+        } public int Sub(string a, string b)
+        { return Convert.ToInt32(a) - Convert.ToInt32(b);
+        } public int Mul(string a, string b)
+        { return Convert.ToInt32(a) \* Convert.ToInt32(b);
+        } public int Div(string a, string b)
+        { return Convert.ToInt32(a) / Convert.ToInt32(b);
+        }
+
+    }
+}
+
+![](https://common.cnblogs.com/images/copycode.gif)
