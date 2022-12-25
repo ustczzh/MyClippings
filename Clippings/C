@@ -1,0 +1,80 @@
+# C# 自动注册OCX方法 - 守护者 - 博客园
+[C# 自动注册OCX方法 - 守护者 - 博客园](https://www.cnblogs.com/xqaizx/p/8516872.html) 
+
+ C#开发系统时，有时候会遇到调用其他语言开发的模块。如果对方提供了OCX时，就需要注册使用，但是实时时，每个客户端都注册一遍就比较麻烦。所以需要系统第一次启动时自动注册OCX。
+
+​
+
+一:C#注册OCX
+
+首先，大家都知道在Windows的“运行”中，输入“Regsvr32.exe 路径”这样的方法来手动注册Dll控件(OCX)，显示这种方法对于程序的自动化部署等带来极大的不便，因此，今天我们着重介绍如何用C#实现自动注册。
+
+既然可以在运行栏中输入“Regsvr32.exe 路径”的方法来注册，那么，一定可以在C#程序中采用同样的方法来调用Regsvr32，以实现注册：
+
+```
+Process p = new Process();
+ 
+p.StartInfo.FileName = "Regsvr32.exe";
+ 
+p.StartInfo.Arguments = "/s C:\\DllTest.dll";//路径中不能有空格
+ 
+p.Start();
+```
+
+用这种方法，注意要添加对命名空间System.Diagnostics的引用：
+
+```
+using System.Diagnostics;
+```
+
+另外，这种方法有一个不足之处，那就是注册工作是在本程序之外由Regsvr32.exe程序来完成的，系统内不方便知道注册的结果，也不方便对注册过程弹出的对话框进行自定义和控制。这里附Regsvr32的参数说明：(感谢网友[伍华聪](http://www.cnblogs.com/wuhuacong/)的提醒)
+
+regsvr32.exe是32位系统下使用的DLL注册和反注册工具，使用它必须通过命令行的方式使用，格式是：
+
+regsvr32 \[/u\] \[/s\] \[/n\] \[/i\[:cmdline\]\] DLL文件名
+
+命令可以在“开始→运行”的文本框中，也可以事先在bat批处理文档中编写好命令。未带任何参数是注册DLL文件功能，其它参数对应功能如下：
+
+/u：反注册DLL文件;
+
+/s：安静模式(Silent)执行命令，即在成功注册/反注册DLL文件前提下不显示结果提示框。
+
+/c：控制端口;
+
+/i：在使用/u反注册时调用DllInstall;
+
+/n：不调用DllRegisterServer，必须与/i连用。
+
+二：验证的OCX是否注册的方法
+
+调用注册表根据你要注册的ocx名称查询一下
+
+```
+/// <summary>
+/// 检查指定的 COM 组件是否已注册到系统中
+/// </summary>
+/// <param name="clsid">指定 COM 组件的Class Id</param>
+/// <returns>true: 表示已注册；false: 表示未注册</returns>
+public static System.Boolean IsRegistered(String clsid)
+{      
+      //参数检查
+      System.Diagnostics.Debug.Assert(!String.IsNullOrEmpty(clsid), "clsid 不应该为空");
+          
+      //设置返回值
+       Boolean result=false;
+      //检查方法，查找注册表是否存在指定的clsid
+      String key = String.Format(@"CLSID\{{{0}}}", clsid);
+       RegistryKey regKey = Registry.ClassesRoot.OpenSubKey(key);
+       if (regKey != null)
+       {
+              result = true;
+       }
+         
+       return result;
+ 
+}//end method
+```
+
+参考文档：
+
+[http://www.xqblog.top/Article.aspx?id=ART2018030600001](http://www.xqblog.top/Article.aspx?id=ART2018030600001)
