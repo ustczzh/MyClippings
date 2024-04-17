@@ -7,7 +7,7 @@
 
 曲率：
 
-κ=|r→¨×r→˙||r→˙|3\\kappa = \\frac{|\\ddot{\\vec{r}}\\times\\dot{\\vec{r}}|}{\\left| \\dot{\\vec{r}}\\right|^3}
+$$κ=|r→¨×r→˙||r→˙|3\\kappa = \\frac{|\\ddot{\\vec{r}}\\times\\dot{\\vec{r}}|}{\\left| \\dot{\\vec{r}}\\right|^3}$$
 
 在二维情况下，其标量形式为：
 
